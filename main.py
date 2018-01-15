@@ -1,81 +1,62 @@
 from __future__ import print_function
-from sklearn.preprocessing import Normalizer
-from models import build_model, compile_model, fit_model
-from time import time
+from models import build_keras_model, compile_keras_model, fit_keras_model, keras_predict
+from models import build_xgboost_model, fit_xgboost_model, xgboost_predict
+from model_cv import k_fold_test
+from utils import average_results
+from utils import predictions_to_csv
+from sklearn.preprocessing import MinMaxScaler
+import numpy as np
 import data_utils
 
+np.set_printoptions(threshold=np.inf)
 
-def normalize_data(x_train):
-    normalizer = Normalizer()
-    # Fit our normalizer to our training data.
-    normalizer.fit(x_train)
-    # Transform the training data using our fitted normalizer.
-    x_train = normalizer.transform(x_train)
-    # Transform the testing data using our x_trained fitted normalizer.
-    return x_train
-
-
-def validate_data(str_test, x, y):
-    scores = model.evaluate(x, y, batch_size=1, verbose=0)
-    print("\n%s %s: %.2f%%" % (str_test, model.metrics_names[1], scores[1] * 100))
-
-
-def print_predictions(predictions, print_results):
-    print('\nDisplaying first %s test results:\n' % print_results)
-    for i in range(len(predictions))[:print_results]:
-        print('Predicted=%.1f, Expected=%.1f' % (round(predictions[i][0]), round(y_test[i])))
-
+TEST_MODEL = False
 
 if __name__ == '__main__':
-    # Execution start time, used to calculate total script runtime.
-    startTime = time()
+    # Load training and prediction dataframes.
+    df_train, df_predict = data_utils.get_dataset()
 
-    # Config
-    dropout = 0.20
-    lr_rate = 0.001
-    loss_patience = 1
-    units = [64, 32, 16,8]
-    # Displays first n test predicted/expected results in the terminal window. Does not affect training/testing.
-    print_results = 10
-    # Multi gpu support. Replace the below number with # of gpus. Default: gpus=0
-    gpus = 0
+    # Split features and targets.
+    X = df_train.iloc[:, 1:].values
+    y = df_train.iloc[:, 0].values
 
-    # Check that our train/test data is available, then load it.
-    data = data_utils.get_dataset()
-    print(data)
-    #
-    # # Split train data into input (X) and output (Y) variables.
-    df_values = data.values
-    X_train = df_values[:, 1:6]
-    y_train = df_values[:, 0]
-    print(X_train)
-    # # Split test data into input (X) and output (Y) variables.
-    # X_test = test[:, 1:3197]
-    # y_test = test[:, 0]
-    #
-    # # Normalize train and test features
-    X_train = normalize_data(X_train)
-    #
-    # # Create model.
-    model = build_model(gpus, units, dropout)
-    #
-    # # Compile model.
-    model = compile_model(model, lr_rate)
-    #
-    # # Fit model.
-    model = fit_model(model, loss_patience, X_train, y_train)
+    # Load predict feature values.
+    X_predict = df_predict.iloc[:, 0:].values
 
-    # # Evaluate training data on the model.
-    # validate_data("Train", X_train, y_train)
-    #
-    # # Evaluate test data on the model.
-    # validate_data("Test", X_test, y_test)
-    #
-    # # Predict our test dataset.
-    # predictions = model.predict(X_test)
-    #
-    # # Output our test dataset for visualization.
-    # print_predictions(predictions, print_results)
-    #
-    # # Print script execution time.
-    # print("\nExecution time: %s %s \n " % (time() - startTime, "seconds"))
+    # Scale our data.
+    scaler = MinMaxScaler()
+    scaler = scaler.fit(X)
+    X = scaler.transform(X)
+    X_predict = scaler.transform(X_predict)
+
+    # Predict or cross-validate model.
+    if not TEST_MODEL:
+        # Build keras model.
+        model_keras = build_keras_model(X.shape[1])
+
+        # Compile keras model.
+        model_keras = compile_keras_model(model_keras)
+
+        # Fit keras model.
+        model_keras = fit_keras_model(model_keras, X, y)
+
+        # Predict on keras model.
+        keras_predictions = keras_predict(model_keras, x_predict=X_predict)
+
+        # Build xgboost model.
+        model_xgboost = build_xgboost_model()
+
+        # Fit xgboost model.
+        model_xgboost = fit_xgboost_model(model_xgboost, X, y)
+
+        # Predict on xgboost model.
+        xgboost_predictions = xgboost_predict(model_xgboost, X_predict)
+
+        # Average keras and xgboost model predictions.
+        results = average_results(keras_predictions, xgboost_predictions)
+
+        # Generate kaggle predictions csv.
+        predictions = np.round(results).astype('int')
+        predictions_to_csv(results, df_predict)
+    else:
+        k_fold_test(X, y)
