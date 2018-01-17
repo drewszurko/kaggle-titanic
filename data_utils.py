@@ -37,7 +37,7 @@ def dir_availability():
 def created_features(df):
     # df["poor_women"] = np.where(df.eval('Sex_female==1 and Pclass<3'), 1, 0)
     # df["rich_women"] = np.where(df.eval('Sex_female==1 and Fare>23.35'), 1, 0)
-    df["poor_male"] = np.where(df.eval('Sex_male==1 and Pclass>=2'), 1, 0)
+    # df["poor_male"] = np.where(df.eval('Sex_male==1 and Pclass>=2'), 1, 0)
     # df["sib_spouse"] = np.where(df.eval('Parch>4 or SibSp>4'), 1, 0)
     return df
 
@@ -51,17 +51,17 @@ def load_dataset(name, filepath, url):
 
     try:
         df = pd.read_csv(filepath, dtype=dtypes, index_col=0)
-        df['Age'] = np.where(((df['Name'].str.contains('Miss')) & (df['Age'].isnull())), 21, df['Age'])
-        df['Age'] = np.where(((df['Name'].str.contains('Mrs')) & (df['Age'].isnull())), 28, df['Age'])
-        df['Age'] = np.where(((df['Name'].str.contains('Master')) & (df['Age'].isnull())), 5, df['Age'])
-        df['Age'] = np.where(((df['Name'].str.contains('Mr.')) & (df['Age'].isnull()) & (df['Pclass'] == 3) & (
-                df['SibSp'] == 0) & (df['Parch'] == 0)), 29, df['Age'])
-        df['Age'] = np.where(((df['Name'].str.contains('Mr.')) & (df['Age'].isnull()) & (df['Pclass'] == 3) & (
-                ~df['SibSp'] == 0) & (~df['Parch'] == 0)), 21, df['Age'])
-        df['Age'] = np.where(((df['Name'].str.contains('Mr.')) & (df['Age'].isnull()) & (df['Pclass'] == 1) & (
-                df['SibSp'] == 0) & (df['Parch'] == 0)), 45, df['Age'])
-        df['Age'] = np.where(((df['Name'].str.contains('Mr.')) & (df['Age'].isnull()) & (df['Pclass'] == 2) & (
-                df['SibSp'] == 0) & (df['Parch'] == 0)), 34, df['Age'])
+        # df['Age'] = np.where(((df['Name'].str.contains('Miss')) & (df['Age'].isnull())), 21, df['Age'])
+        # df['Age'] = np.where(((df['Name'].str.contains('Mrs')) & (df['Age'].isnull())), 28, df['Age'])
+        # df['Age'] = np.where(((df['Name'].str.contains('Master')) & (df['Age'].isnull())), 5, df['Age'])
+        # df['Age'] = np.where(((df['Name'].str.contains('Mr.')) & (df['Age'].isnull()) & (df['Pclass'] == 3) & (
+        #         df['SibSp'] == 0) & (df['Parch'] == 0)), 29, df['Age'])
+        # df['Age'] = np.where(((df['Name'].str.contains('Mr.')) & (df['Age'].isnull()) & (df['Pclass'] == 3) & (
+        #         ~df['SibSp'] == 0) & (~df['Parch'] == 0)), 21, df['Age'])
+        # df['Age'] = np.where(((df['Name'].str.contains('Mr.')) & (df['Age'].isnull()) & (df['Pclass'] == 1) & (
+        #         df['SibSp'] == 0) & (df['Parch'] == 0)), 45, df['Age'])
+        # df['Age'] = np.where(((df['Name'].str.contains('Mr.')) & (df['Age'].isnull()) & (df['Pclass'] == 2) & (
+        #         df['SibSp'] == 0) & (df['Parch'] == 0)), 34, df['Age'])
 
         drop_columns = ['Name', 'Cabin', 'Ticket']
         df.drop(drop_columns, axis=1, inplace=True)
