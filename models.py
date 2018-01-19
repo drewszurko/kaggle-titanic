@@ -15,35 +15,25 @@ import numpy as np
 
 # Cross-validation params.
 _STRAT_KFOLD_PARAMS = {
-    'n_splits': 5,
+    'n_splits': 4,
     'random_state': 19,
     'shuffle': True
 }
 
 # Keras 1 hidden layer params.
 _PARAMS_KERAS = {
-    'batch_size': [64],
-    'epochs': [250],
-    'units': [16],
+    'batch_size': [128],
+    'epochs': [477, 485],
+    'units': [32],
     'dropout': [0.50],
-    'optimizer': [RMSprop(lr=0.002)],
-    'verbose': [0]
-}
-
-# Keras 2 hidden layer params.
-_PARAMS_KERAS2 = {
-    'batch_size': [64],
-    'epochs': [150],
-    'units': [16],
-    'dropout': [0.50],
-    'optimizer': [RMSprop(lr=0.002)],
+    'optimizer': [RMSprop(lr=0.002), RMSprop(lr=0.001)],
     'verbose': [0]
 }
 
 # XGBoost params.
 _PARAMS_XGBOOST = {
-    'n_estimators': [500],
-    'max_depth': [4],
+    'n_estimators': [300],
+    'max_depth': [7],
     'learning_rate': [0.1],
     'min_child_weight': [1],
     'objective': ['binary:logistic'],
@@ -55,29 +45,29 @@ _PARAMS_XGBOOST = {
 
 # Random Forest params.
 _PARAMS_RFC = {
-    'n_estimators': [400],
-    'max_depth': [4],
+    'n_estimators': [250],
+    'max_depth': [5],
     'min_samples_leaf': [2],
     'max_features': ['sqrt']
 }
 
 # Extra Trees params.
 _PARAMS_ETC = {
-    'n_estimators': [400],
+    'n_estimators': [150],
     'max_depth': [6],
-    'min_samples_leaf': [2],
+    'min_samples_leaf': [1],
 }
 
 # Ada Boost params.
 _PARAMS_ABC = {
-    'n_estimators': [400],
-    'learning_rate': [0.75],
+    'n_estimators': [150],
+    'learning_rate': [0.5],
 }
 
 # Graident Boost params.
 _PARAMS_GBC = {
-    'n_estimators': [400],
-    'max_depth': [4],
+    'n_estimators': [300],
+    'max_depth': [5],
     'min_samples_leaf': [3],
 }
 
@@ -94,8 +84,8 @@ _PARAMS_XGBOOST_SECOND_LEVEL = {
     'max_depth': 4,
     'random_state': _STRAT_KFOLD_PARAMS.get('random_state'),
     'learning_rate': 0.1,
-    'n_estimators': 500,
-    'min_child_weight': 2,
+    'n_estimators': 800,
+    'min_child_weight': 1,
     'gamma': 0.9,
     'objective': 'binary:logistic',
     'scale_pos_weight': 1,
@@ -113,27 +103,12 @@ def create_keras1(input_dim=1, units=16, dropout=0.5, optimizer='RMSprop'):
     k1.add(Dropout(dropout))
     k1.add(Dense(units, activation='relu'))
     k1.add(Dropout(dropout))
+    k1.add(Dense(units, activation='relu'))
+    k1.add(Dropout(dropout))
     k1.add(Dense(1, activation='sigmoid'))
 
     k1.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=['accuracy'])
-
     return k1
-
-
-def create_keras2(input_dim=1, units=16, dropout=0.5, optimizer='RMSprop'):
-    k2 = Sequential()
-
-    k2.add(Dense(units, input_dim=input_dim, activation='relu'))
-    k2.add(Dropout(dropout))
-    k2.add(Dense(units, activation='relu'))
-    k2.add(Dropout(dropout))
-    k2.add(Dense(units, activation='relu'))
-    k2.add(Dropout(dropout))
-    k2.add(Dense(1, activation='sigmoid'))
-
-    k2.compile(loss='binary_crossentropy', optimizer=optimizer, metrics=['accuracy'])
-
-    return k2
 
 
 def _get_train_test_scores(mdl, x, y, x_pred):
@@ -157,72 +132,64 @@ def _get_train_test_scores(mdl, x, y, x_pred):
 
 def gridsearch_cv(x, y, x_shape):
     _PARAMS_KERAS['input_dim'] = [x_shape]
-    _PARAMS_KERAS2['input_dim'] = [x_shape]
 
     k1_model = KerasClassifier(build_fn=create_keras1)
-    k2_model = KerasClassifier(build_fn=create_keras2)
 
-    k1 = GridSearchCV(estimator=k1_model, verbose=0,
+    k1 = GridSearchCV(estimator=k1_model, verbose=1,
                       param_grid=_PARAMS_KERAS, cv=strat_kfold, scoring='accuracy',
                       n_jobs=1)
     k1_results = k1.fit(X=x, y=y)
     k1_params = k1_results.best_params_
     print('Best k1 params: %s' % k1_params)
 
-    k2 = GridSearchCV(estimator=k2_model, verbose=0,
-                      param_grid=_PARAMS_KERAS2, cv=strat_kfold, scoring='accuracy',
-                      n_jobs=1)
-
-    k2_results = k2.fit(X=x, y=y)
-    k2_params = k2_results.best_params_
-    print('Best k2 params: %s' % k2_params)
-
-    xg1 = GridSearchCV(estimator=XGBClassifier(), param_grid=_PARAMS_XGBOOST, cv=strat_kfold,
+    xg1 = GridSearchCV(estimator=XGBClassifier(), verbose=1, param_grid=_PARAMS_XGBOOST, cv=strat_kfold,
                        scoring='accuracy',
                        n_jobs=1)
     xg1_results = xg1.fit(X=x, y=y)
     xg1_params = xg1_results.best_params_
     print('Best xg1 params: %s' % xg1_params)
 
-    rfc1 = GridSearchCV(estimator=RandomForestClassifier(), param_grid=_PARAMS_RFC, cv=strat_kfold, scoring='accuracy',
+    rfc1 = GridSearchCV(estimator=RandomForestClassifier(), verbose=1, param_grid=_PARAMS_RFC, cv=strat_kfold,
+                        scoring='accuracy',
                         n_jobs=1)
     rfc1_results = rfc1.fit(X=x, y=y)
     rfc1_params = rfc1_results.best_params_
-    print('Best rfc1 params: %s' % rfc1_results.best_params_)
+    print('Best rfc1 params: %s' % rfc1_params)
 
-    etc1 = GridSearchCV(estimator=ExtraTreesClassifier(), param_grid=_PARAMS_ETC, cv=strat_kfold, scoring='accuracy',
+    etc1 = GridSearchCV(estimator=ExtraTreesClassifier(), verbose=1, param_grid=_PARAMS_ETC, cv=strat_kfold,
+                        scoring='accuracy',
                         n_jobs=1)
     etc1_results = etc1.fit(X=x, y=y)
     etc1_params = etc1_results.best_params_
-    print('Best etc1 params: %s' % etc1_results.best_params_)
+    print('Best etc1 params: %s' % etc1_params)
 
-    abc1 = GridSearchCV(estimator=AdaBoostClassifier(), param_grid=_PARAMS_ABC, cv=strat_kfold, scoring='accuracy',
+    abc1 = GridSearchCV(estimator=AdaBoostClassifier(), verbose=1, param_grid=_PARAMS_ABC, cv=strat_kfold,
+                        scoring='accuracy',
                         n_jobs=1)
     abc1_results = abc1.fit(X=x, y=y)
     abc1_params = abc1_results.best_params_
-    print('Best abc1 params: %s' % abc1_results.best_params_)
+    print('Best abc1 params: %s' % abc1_params)
 
-    gbc1 = GridSearchCV(estimator=GradientBoostingClassifier(), param_grid=_PARAMS_GBC, cv=strat_kfold,
+    gbc1 = GridSearchCV(estimator=GradientBoostingClassifier(), verbose=1, param_grid=_PARAMS_GBC, cv=strat_kfold,
                         scoring='accuracy',
                         n_jobs=1)
     gbc1_results = gbc1.fit(X=x, y=y)
     gbc1_params = gbc1_results.best_params_
-    print('Best gbc1 params: %s' % gbc1_results.best_params_)
+    print('Best gbc1 params: %s' % gbc1_params)
 
-    svc1 = GridSearchCV(estimator=SVC(), param_grid=_PARAMS_SVC, cv=strat_kfold, scoring='accuracy',
+    svc1 = GridSearchCV(estimator=SVC(), param_grid=_PARAMS_SVC, verbose=1, cv=strat_kfold, scoring='accuracy',
                         n_jobs=1)
     svc1_results = svc1.fit(X=x, y=y)
     svc1_params = svc1_results.best_params_
-    print('Best svc1 params: %s' % svc1_results.best_params_)
+    print('Best svc1 params: %s' % svc1_params)
 
-    return k1_params, k2_params, xg1_params, rfc1_params, etc1_params, abc1_params, gbc1_params, svc1_params
+    return k1_params, xg1_params, rfc1_params, etc1_params, abc1_params, gbc1_params, svc1_params
 
 
 # Fit keras model.
-def fit_models(k1_params, k2_params, xg1_params, rfc1_params, etc1_params, abc1_params, gbc1_params, svc1_params, x, y,
-               x_pred, df_predict):
+def fit_models(k1_params, xg1_params, rfc1_params, etc1_params, abc1_params, gbc1_params, svc1_params, x, y, x_pred,
+               df_predict):
     k1 = KerasHelper(model=KerasClassifier, build_fn=create_keras1, params=k1_params)
-    k2 = KerasHelper(model=KerasClassifier, build_fn=create_keras2, params=k2_params)
     xg1 = XgboostHelper(model=XGBClassifier, seed=_STRAT_KFOLD_PARAMS.get('random_state'), params=xg1_params)
     rfc1 = SklearnHelper(model=RandomForestClassifier, seed=_STRAT_KFOLD_PARAMS.get('random_state'), params=rfc1_params)
     etc1 = SklearnHelper(model=ExtraTreesClassifier, seed=_STRAT_KFOLD_PARAMS.get('random_state'), params=etc1_params)
@@ -231,16 +198,15 @@ def fit_models(k1_params, k2_params, xg1_params, rfc1_params, etc1_params, abc1_
                          params=gbc1_params)
     svc1 = SklearnHelper(model=SVC, seed=_STRAT_KFOLD_PARAMS.get('random_state'), params=svc1_params)
 
-    ktr1, kt1 = _get_train_test_scores(k1, x, y, x_pred)  # Keras Sequential 1 hidden layer
-    ktr2, kt2 = _get_train_test_scores(k2, x, y, x_pred)  # Keras Sequential 2 hidden layer
+    ktr1, kt1 = _get_train_test_scores(k1, x, y, x_pred)  # Keras Sequential 2 hidden layer
     xgtr1, xgt1 = _get_train_test_scores(xg1, x, y, x_pred)  # Xgboost
     rfctr1, rfct1 = _get_train_test_scores(rfc1, x, y, x_pred)  # Random Forest
     etctr1, etct1 = _get_train_test_scores(etc1, x, y, x_pred)  # Extra Trees
     abctr1, abct1 = _get_train_test_scores(abc1, x, y, x_pred)  # Ada Boost
     gbctr1, gbct1 = _get_train_test_scores(gbc1, x, y, x_pred)  # Gradient Boosting
     svctr1, svct1 = _get_train_test_scores(svc1, x, y, x_pred)  # SVC
-    x_train = np.concatenate((ktr1, ktr2, xgtr1, rfctr1, etctr1, abctr1, gbctr1, svctr1), axis=1)
-    x_pred = np.concatenate((kt1, kt2, xgt1, rfct1, etct1, abct1, gbct1, svct1), axis=1)
+    x_train = np.concatenate((ktr1, xgtr1, rfctr1, etctr1, abctr1, gbctr1, svctr1), axis=1)
+    x_pred = np.concatenate((kt1, xgt1, rfct1, etct1, abct1, gbct1, svct1), axis=1)
 
     _stacked_xgboost(x_train, y, x_pred, df_predict)
 
