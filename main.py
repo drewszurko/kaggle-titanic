@@ -17,9 +17,9 @@ if __name__ == '__main__':
     x_shape = X.shape[1]
 
     # Gridsearch models.
-    k1_params, k2_params, xg1_params, rfc1_params, etc1_params, abc1_params, gbc1_params, svc1_params = gridsearch_cv(
+    k1_params, xg1_params, rfc1_params, etc1_params, abc1_params, gbc1_params, svc1_params = gridsearch_cv(
         X, y, x_shape)
 
     # Predict on models.
-    fit_models(k1_params, k2_params, xg1_params, rfc1_params, etc1_params, abc1_params, gbc1_params, svc1_params,
+    fit_models(k1_params, xg1_params, rfc1_params, etc1_params, abc1_params, gbc1_params, svc1_params,
                X, y, X_predict, df_predict)
