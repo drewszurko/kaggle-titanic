@@ -1,0 +1,35 @@
+trainingInput:
+  scaleTier: BASIC_GPU
+  runtimeVersion: '1.4'
+  pythonVersion: '3.5'
+  hyperparameters:
+    goal: MAXIMIZE
+    hyperparameterMetricTag: val_acc
+    maxTrials: 1
+    maxParallelTrials: 1
+    params:
+      - parameterName: dropout-one
+        type: DOUBLE
+        minValue: 0.1
+        maxValue: 0.5
+        scaleType: UNIT_LINEAR_SCALE
+      - parameterName: epochs-one
+        type: INTEGER
+        minValue: 1
+        maxValue: 115
+        scaleType: UNIT_LINEAR_SCALE
+      - parameterName: units-one
+        type: INTEGER
+        minValue: 1
+        maxValue: 32
+        scaleType: UNIT_LINEAR_SCALE
+      - parameterName: rms-one
+        type: DOUBLE
+        minValue: 0.001
+        maxValue: 0.01
+        scaleType: UNIT_LINEAR_SCALE
+      - parameterName: batchsize-one
+        type: INTEGER
+        minValue: 1
+        maxValue: 128
+        scaleType: UNIT_LINEAR_SCALE
