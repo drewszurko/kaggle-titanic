@@ -76,16 +76,16 @@ def _engineer_features(df):
     # Map Title to buckets.
     title_mapping = {"Mr": 1, "Miss": 2, "Mrs": 3, "Master": 4, "Rare": 5}
     df['Title'] = df['Title'].map(title_mapping)
-
+    print(df)
     # Fill nan Age values. For men, each age is the average age for titles and classes.
     # For women, the ages are averaged by the miss/mrs titles and the average year married in 1912.
-    df.loc[df['Title'].str.contrains('Miss') & df['Age'].isnull, 'Age'] = 21
-    df.loc[df['Title'].str.contrains('Mrs') & df['Age'].isnull, 'Age'] = 28
-    df.loc[df['Title'].str.contrains('Master') & df['Age'].isnull, 'Age'] = 5
-    df.loc[df['Title'].str.contrains('Mr.') & df['Age'].isnull & df['Pclass'] == 3 & df['IsAlone'] == 1, 'Age'] = 29
-    df.loc[df['Title'].str.contrains('Mr.') & df['Age'].isnull & df['Pclass'] == 3 & df['IsAlone'] == 0, 'Age'] = 21
-    df.loc[df['Title'].str.contrains('Mr.') & df['Age'].isnull & df['Pclass'] == 1 & df['IsAlone'] == 1, 'Age'] = 45
-    df.loc[df['Title'].str.contrains('Mr.') & df['Age'].isnull & df['Pclass'] == 2 & df['IsAlone'] == 1, 'Age'] = 34
+    df.loc[(df['Title'] == 2) & (df['Age'].isnull()), 'Age'] = 21
+    df.loc[(df['Title'] == 3) & (df['Age'].isnull()), 'Age'] = 28
+    df.loc[(df['Title'] == 4) & (df['Age'].isnull()), 'Age'] = 5
+    df.loc[(df['Title'] == 1) & (df['Age'].isnull()) & (df['Pclass'] == 3) & (df['IsAlone'] == 1), 'Age'] = 29
+    df.loc[(df['Title'] == 1) & (df['Age'].isnull()) & (df['Pclass'] == 3) & (df['IsAlone'] == 0), 'Age'] = 21
+    df.loc[(df['Title'] == 1) & (df['Age'].isnull()) & (df['Pclass'] == 1) & (df['IsAlone'] == 1), 'Age'] = 45
+    df.loc[(df['Title'] == 1) & (df['Age'].isnull()) & (df['Pclass'] == 2) & (df['IsAlone'] == 1), 'Age'] = 34
 
     # Fill all nans in the Embarked column.
     df['Embarked'] = df['Embarked'].fillna('S')
