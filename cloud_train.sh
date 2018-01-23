@@ -13,7 +13,7 @@ gcloud ml-engine jobs submit training $JOB_NAME \
     --region $REGION \
     --runtime-version 1.4 \
     --module-name trainer.main \
-    --config=trainer/config.yaml \
+    --config=config.yaml \
     --package-path ./trainer \
     -- \
     --train-file gs://$BUCKET_NAME/data \
