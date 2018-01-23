@@ -1,9 +1,10 @@
 from __future__ import print_function
-from trainer.models import train_cloud
+from trainer.cloud_models import train_cloud
 from trainer.local_models import train_local
 from sklearn.preprocessing import StandardScaler
 from trainer import data_utils
 import argparse
+
 
 _cloud_train = False
 
