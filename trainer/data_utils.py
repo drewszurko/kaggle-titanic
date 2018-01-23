@@ -1,8 +1,11 @@
 from __future__ import print_function
+from tensorflow.python.lib.io import file_io
 import pandas as pd
 import numpy as np
 import re
-from tensorflow.python.lib.io import file_io
+import os
+
+_PROJECT_ROOT = os.pardir
 
 # Cloud/local path to passenger train/predict files.
 _PASSENGER_DATA_LOCAL = 'data/passengerTrain.csv'
@@ -15,8 +18,8 @@ def get_dataset(cloud_train):
     print("\nImporting data... Please wait.")
     # Load correct cloud/local train/predict dataset path.
     if not cloud_train:
-        data = _load_dataset("Training", _PASSENGER_DATA_LOCAL)
-        predict_data = _load_dataset("Predict", _PASSENGER_PREDICT_DATA_LOCAL)
+        data = _load_dataset("Training", os.path.join(_PROJECT_ROOT, _PASSENGER_DATA_LOCAL))
+        predict_data = _load_dataset("Predict", os.path.join(_PROJECT_ROOT, _PASSENGER_PREDICT_DATA_LOCAL))
     else:
         gs_train = file_io.FileIO(_PASSENGER_DATA_CLOUD, mode='r')
         gs_predict = file_io.FileIO(_PASSENGER_PREDICT_DATA_CLOUD, mode='r')
@@ -76,7 +79,7 @@ def _engineer_features(df):
     # Map Title to buckets.
     title_mapping = {"Mr": 1, "Miss": 2, "Mrs": 3, "Master": 4, "Rare": 5}
     df['Title'] = df['Title'].map(title_mapping)
-    print(df)
+
     # Fill nan Age values. For men, each age is the average age for titles and classes.
     # For women, the ages are averaged by the miss/mrs titles and the average year married in 1912.
     df.loc[(df['Title'] == 2) & (df['Age'].isnull()), 'Age'] = 21
