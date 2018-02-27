@@ -10,7 +10,7 @@ import numpy as np
 # Show log output during training and evaluation.
 _VERBOSE = 0
 
-# Keras 1 hidden layer params.
+# Keras model 1 hidden layer params.
 _PARAMS_K1 = {
     'batch_size': 32,
     'epochs': 149,
@@ -19,7 +19,7 @@ _PARAMS_K1 = {
     'optimizer': RMSprop(lr=0.0045913049910435155)
 }
 
-# Keras 1 hidden layer params.
+# Keras model 2 hidden layer params.
 _PARAMS_K2 = {
     'batch_size': 32,
     'epochs': 100,
@@ -28,7 +28,7 @@ _PARAMS_K2 = {
     'optimizer': RMSprop(lr=0.0039106062204943568)
 }
 
-# Keras 1 hidden layer params.
+# Keras model 3 hidden layer params.
 _PARAMS_K3 = {
     'batch_size': 60,
     'epochs': 72,
@@ -37,7 +37,7 @@ _PARAMS_K3 = {
     'optimizer': RMSprop(lr=0.0097655287637879243)
 }
 
-# STACKED XGBoost params
+# STACKED XGBoost params.
 _PARAMS_XGBOOST = {
     'max_depth': 4,
     'random_state': 19,
