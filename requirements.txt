@@ -2,6 +2,6 @@ requests==2.18.1
 pandas==0.22.0
 keras==2.1.3
 scikit_learn==0.19.1
-tensorflow==1.4.1
+tensorflow==2.4.2
 numpy
 xgboost
